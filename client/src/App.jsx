@@ -5,11 +5,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
-// --- Importation des Pages Publiques ---
+// --- Importation de toutes les Pages ---
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
-
-// --- Importation des Pages Protégées ---
 import DashboardPage from './pages/DashboardPage.jsx';
 import StudentListPage from './pages/StudentListPage.jsx';
 import AddStudentPage from './pages/AddStudentPage.jsx';
@@ -18,7 +16,10 @@ import AddTeacherPage from './pages/AddTeacherPage.jsx';
 import EditTeacherPage from './pages/EditTeacherPage.jsx';
 import ClassListPage from './pages/ClassListPage.jsx';
 import AddClassPage from './pages/AddClassPage.jsx';
-
+import ClassGradesPage from './pages/ClassGradesPage.jsx';
+import ClassResultsPage from './pages/ClassResultsPage.jsx';
+import ResultsHubPage from './pages/ResultsHubPage.jsx'; // <-- L'IMPORTATION MANQUANTE
+import GradeEntryHubPage from './pages/GradeEntryHubPage.jsx';
 
 function App() {
   return (
@@ -31,47 +32,24 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
 
           {/* --- Routes Protégées --- */}
-          <Route 
-            path="/dashboard" 
-            element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} 
-          />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           
-          {/* Routes pour la Gestion des Étudiants */}
-          <Route 
-            path="/students" 
-            element={<ProtectedRoute><StudentListPage /></ProtectedRoute>} 
-          />
-          <Route 
-            path="/students/add" 
-            element={<ProtectedRoute><AddStudentPage /></ProtectedRoute>} 
-          />
+          <Route path="/students" element={<ProtectedRoute><StudentListPage /></ProtectedRoute>} />
+          <Route path="/students/add" element={<ProtectedRoute><AddStudentPage /></ProtectedRoute>} />
           
-          {/* Routes pour la Gestion des Enseignants */}
-          <Route 
-            path="/teachers" 
-            element={<ProtectedRoute><TeacherListPage /></ProtectedRoute>} 
-          />
-          <Route 
-            path="/teachers/add" 
-            element={<ProtectedRoute><AddTeacherPage /></ProtectedRoute>} 
-          />
-          <Route 
-            path="/teachers/edit/:id" 
-            element={<ProtectedRoute><EditTeacherPage /></ProtectedRoute>} 
-          />
+          <Route path="/teachers" element={<ProtectedRoute><TeacherListPage /></ProtectedRoute>} />
+          <Route path="/teachers/add" element={<ProtectedRoute><AddTeacherPage /></ProtectedRoute>} />
+          <Route path="/teachers/edit/:id" element={<ProtectedRoute><EditTeacherPage /></ProtectedRoute>} />
 
-          {/* Routes pour la Gestion des Classes */}
-          <Route 
-            path="/classes" 
-            element={<ProtectedRoute><ClassListPage /></ProtectedRoute>} 
-          />
-          <Route 
-            path="/classes/add" 
-            element={<ProtectedRoute><AddClassPage /></ProtectedRoute>} 
-          />
+          <Route path="/classes" element={<ProtectedRoute><ClassListPage /></ProtectedRoute>} />
+          <Route path="/classes/add" element={<ProtectedRoute><AddClassPage /></ProtectedRoute>} />
+          <Route path="/class/:classId/grades" element={<ProtectedRoute><ClassGradesPage /></ProtectedRoute>} />
+          <Route path="/classes/:classId/results" element={<ProtectedRoute><ClassResultsPage /></ProtectedRoute>} />
+
+          <Route path="/results" element={<ProtectedRoute><ResultsHubPage /></ProtectedRoute>} />
+          <Route path="/grades/entry" element={<ProtectedRoute><GradeEntryHubPage /></ProtectedRoute>} />
 
           {/* --- Redirection par défaut --- */}
-          {/* Redirige toute URL inconnue vers le tableau de bord */}
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
       </div>

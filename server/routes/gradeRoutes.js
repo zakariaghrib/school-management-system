@@ -1,4 +1,3 @@
-// server/routes/gradeRoutes.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -6,6 +5,7 @@ const {
   getGradesForStudent,
   updateGrade,
   deleteGrade,
+  getClassResults,
 } = require('../controllers/gradeController.js');
 
 const { protect } = require('../middlewares/authMiddleware.js');
@@ -25,5 +25,9 @@ router.route('/:id')
 // Route pour obtenir toutes les notes d'un étudiant spécifique
 router.route('/student/:studentId')
   .get(authorize('admin', 'teacher'), getGradesForStudent);
+  
+// Route pour obtenir les résultats d'une classe
+router.route('/results/class/:classId')
+  .get(authorize('admin', 'teacher'), getClassResults);
 
 module.exports = router;

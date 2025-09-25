@@ -1,5 +1,6 @@
-// server/controllers/gradeController.js
 const Grade = require('../models/Grade.js');
+const Class = require('../models/Class.js');
+const Student = require('../models/Student.js'); // Assurez-vous d'importer Student
 
 // @desc    Add a new grade
 // @access  Private (Admin, Teacher)
@@ -18,7 +19,6 @@ const addGrade = async (req, res) => {
 // @access  Private (Admin, Teacher)
 const getGradesForStudent = async (req, res) => {
   try {
-    // On utilise .populate pour afficher les détails de la matière au lieu de juste l'ID
     const grades = await Grade.find({ student: req.params.studentId })
       .populate('subject', 'name')
       .populate('teacher', 'firstName lastName');
@@ -58,9 +58,56 @@ const deleteGrade = async (req, res) => {
   }
 };
 
+// @desc    Get results for a specific class
+// @access  Private (Admin, Teacher)
+const getClassResults = async (req, res) => {
+  try {
+    const { classId } = req.params;
+
+    const targetClass = await Class.findById(classId).select('students');
+    if (!targetClass) {
+      return res.status(404).json({ msg: 'Class not found' });
+    }
+    const studentIds = targetClass.students;
+
+    const results = await Grade.aggregate([
+      { $match: { student: { $in: studentIds } } },
+      {
+        $group: {
+          _id: '$student',
+          averageGrade: { $avg: '$grade' },
+        }
+      },
+      {
+        $lookup: {
+          from: 'students',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'studentInfo'
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          studentId: '$_id',
+          studentName: { $concat: [{ $arrayElemAt: ['$studentInfo.firstName', 0] }, ' ', { $arrayElemAt: ['$studentInfo.lastName', 0] }] },
+          average: { $round: ['$averageGrade', 2] },
+        }
+      }
+    ]);
+
+    res.json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+};
+
+
 module.exports = {
   addGrade,
   getGradesForStudent,
   updateGrade,
   deleteGrade,
+  getClassResults,
 };

@@ -1,4 +1,3 @@
-// server/routes/classRoutes.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -13,20 +12,27 @@ const {
 const { protect } = require('../middlewares/authMiddleware.js');
 const { authorize } = require('../middlewares/authorizationMiddleware.js');
 
-// Protéger toutes les routes et les restreindre aux administrateurs
-router.use(protect, authorize('admin'));
+// --- Note : On ne met plus de router.use global pour authorize ici ---
+// On applique seulement la protection de base (doit être connecté)
+router.use(protect);
+
+// --- On définit les permissions pour chaque route ---
 
 router.route('/')
-  .post(createClass)
-  .get(getAllClasses);
+  // Seul un admin peut créer une classe
+  .post(authorize('admin'), createClass)
+  // Un admin OU un enseignant peut voir la liste des classes
+  .get(authorize('admin', 'teacher'), getAllClasses);
 
 router.route('/:id')
-  .get(getClassById)
-  .put(updateClass);
+  // Un admin OU un enseignant peut voir les détails d'UNE classe
+  .get(authorize('admin', 'teacher'), getClassById)
+  // Seul un admin peut modifier les détails d'une classe
+  .put(authorize('admin'), updateClass);
 
-// Route pour ajouter/retirer un étudiant d'une classe
+// Route pour ajouter/retirer un étudiant d'une classe (admin seulement)
 router.route('/:classId/students/:studentId')
-  .put(addStudentToClass)
-  .delete(removeStudentFromClass);
+  .put(authorize('admin'), addStudentToClass)
+  .delete(authorize('admin'), removeStudentFromClass);
 
 module.exports = router;

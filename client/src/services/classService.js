@@ -16,9 +16,19 @@ const createClass = (classData, token) => {
   });
 };
 
+// --- FONCTION MANQUANTE AJOUTÉE ICI ---
+// Obtenir une classe par son ID
+const getClassById = (id, token) => {
+  return axios.get(API_URL + id, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+// ------------------------------------
+
 const classService = {
   getAllClasses,
   createClass,
+  getClassById, // <-- Assurez-vous qu'elle est exportée
 };
 
 export default classService;
