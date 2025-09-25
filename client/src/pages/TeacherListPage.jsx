@@ -1,18 +1,26 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import teacherService from '../services/teacherService';
 import { AuthContext } from '../context/AuthContext';
+import { 
+  Container, Typography, Box, Button, Paper, Table, TableBody, 
+  TableCell, TableContainer, TableHead, TableRow, IconButton, Chip 
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const TeacherListPage = () => {
   const [teachers, setTeachers] = useState([]);
   const [message, setMessage] = useState('');
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const loadTeachers = () => {
-    if (user && user.token) {
+    if (user?.token) {
       teacherService.getAllTeachers(user.token)
         .then(response => setTeachers(response.data))
-        .catch(error => setMessage(error.response?.data?.msg || "Erreur"));
+        .catch(() => setMessage("Erreur de chargement des enseignants."));
     }
   };
 
@@ -20,43 +28,62 @@ const TeacherListPage = () => {
     loadTeachers();
   }, [user]);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?')) {
-      teacherService.deleteTeacher(id, user.token)
-        .then(() => loadTeachers()) // Recharger la liste après suppression
-        .catch(error => setMessage(error.response?.data?.msg || "Erreur"));
+      try {
+        await teacherService.deleteTeacher(id, user.token);
+        loadTeachers();
+      } catch (error) {
+        setMessage(error.response?.data?.msg || "Erreur de suppression.");
+      }
     }
   };
 
   return (
-    <div>
-      <h2>Gestion des Enseignants</h2>
-      <Link to="/teachers/add">Ajouter un Enseignant</Link>
-      {message && <p style={{ color: 'red' }}>{message}</p>}
-      <table border="1" style={{ width: '100%', marginTop: '1rem' }}>
-        <thead>
-          <tr>
-            <th>Prénom</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teachers.map(teacher => (
-            <tr key={teacher._id}>
-              <td>{teacher.firstName}</td>
-              <td>{teacher.lastName}</td>
-              <td>{teacher.contact.email}</td>
-              <td>
-                <Link to={`/teachers/edit/${teacher._id}`}>Modifier</Link> |{' '}
-                <button onClick={() => handleDelete(teacher._id)}>Supprimer</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Container maxWidth="lg">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 4 }}>
+        <Typography variant="h4">Gestion des Enseignants</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} component={Link} to="/teachers/add">
+          Ajouter un Enseignant
+        </Button>
+      </Box>
+
+      {message && <Typography color="error">{message}</Typography>}
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nom</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Matières</TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {teachers.map((teacher) => (
+              <TableRow key={teacher._id} hover>
+                <TableCell>{teacher.firstName} {teacher.lastName}</TableCell>
+                <TableCell>{teacher.contact.email}</TableCell>
+                <TableCell>
+                  {teacher.subjects?.map(subject => (
+                    <Chip key={subject._id} label={subject.name} sx={{ mr: 0.5 }} size="small" />
+                  ))}
+                </TableCell>
+                <TableCell align="right">
+                  <IconButton color="primary" onClick={() => navigate(`/teachers/edit/${teacher._id}`)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => handleDelete(teacher._id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
 

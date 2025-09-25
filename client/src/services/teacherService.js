@@ -8,15 +8,14 @@ const getAllTeachers = (token) => {
   });
 };
 
-const createTeacher = (teacherData, token) => {
-  return axios.post(API_URL, teacherData, {
+const getTeacherById = (id, token) => {
+  return axios.get(API_URL + id, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
 
-// --- Nouvelles fonctionnalités ---
-const getTeacherById = (id, token) => {
-  return axios.get(API_URL + id, {
+const createTeacher = (teacherData, token) => {
+  return axios.post(API_URL, teacherData, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
@@ -33,13 +32,19 @@ const deleteTeacher = (id, token) => {
   });
 };
 
+const getMyClasses = (token) => {
+  return axios.get(API_URL + 'my-classes', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
 
 const teacherService = {
   getAllTeachers,
-  createTeacher,
   getTeacherById,
+  createTeacher,
   updateTeacher,
   deleteTeacher,
+  getMyClasses,
 };
 
 export default teacherService;

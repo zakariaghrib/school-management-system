@@ -7,13 +7,11 @@ const createTeacher = async (req, res) => {
   if (!firstName || !lastName || !contact || !contact.email) {
     return res.status(400).json({ msg: 'Veuillez fournir un prénom, un nom et un email de contact' });
   }
-
   try {
     const teacherExists = await Teacher.findOne({ 'contact.email': contact.email });
     if (teacherExists) {
       return res.status(400).json({ msg: 'Un enseignant avec cet email existe déjà' });
     }
-
     const teacher = new Teacher({ firstName, lastName, contact, subjects });
     const createdTeacher = await teacher.save();
     res.status(201).json(createdTeacher);
@@ -28,11 +26,11 @@ const getAllTeachers = async (req, res) => {
     const teachers = await Teacher.find({}).populate('subjects', 'name');
     res.json(teachers);
   } catch (error) {
-    res.status(500).json({ msg: 'Server Error' });
+    res.status(500).json({ msg: 'Erreur du serveur' });
   }
 };
 
-// Obtenir un enseignant par ID
+// Obtenir un enseignant par son ID
 const getTeacherById = async (req, res) => {
   try {
     const teacher = await Teacher.findById(req.params.id).populate('subjects', 'name');
@@ -42,7 +40,7 @@ const getTeacherById = async (req, res) => {
       res.status(404).json({ msg: 'Enseignant non trouvé' });
     }
   } catch (error) {
-    res.status(500).json({ msg: 'Server Error' });
+    res.status(500).json({ msg: 'Erreur du serveur' });
   }
 };
 
@@ -55,7 +53,6 @@ const updateTeacher = async (req, res) => {
       teacher.lastName = req.body.lastName || teacher.lastName;
       teacher.contact = req.body.contact || teacher.contact;
       teacher.subjects = req.body.subjects || teacher.subjects;
-
       const updatedTeacher = await teacher.save();
       res.json(updatedTeacher);
     } else {
@@ -77,7 +74,7 @@ const deleteTeacher = async (req, res) => {
       res.status(404).json({ msg: 'Enseignant non trouvé' });
     }
   } catch (error) {
-    res.status(500).json({ msg: 'Server Error' });
+    res.status(500).json({ msg: 'Erreur du serveur' });
   }
 };
 
@@ -87,7 +84,7 @@ const getMyClasses = async (req, res) => {
     const classes = await Class.find({ mainTeacher: req.user.id }).populate('students', 'firstName lastName');
     res.json(classes);
   } catch (error) {
-    res.status(500).json({ msg: 'Server Error' });
+    res.status(500).json({ msg: 'Erreur du serveur' });
   }
 };
 
