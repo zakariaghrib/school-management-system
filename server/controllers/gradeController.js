@@ -1,113 +1,79 @@
 const Grade = require('../models/Grade.js');
 const Class = require('../models/Class.js');
-const Student = require('../models/Student.js'); // Assurez-vous d'importer Student
+const Student = require('../models/Student.js');
+const Subject = require('../models/Subject.js');
 
-// @desc    Add a new grade
-// @access  Private (Admin, Teacher)
+// Ajouter une nouvelle note
 const addGrade = async (req, res) => {
   const { student, subject, grade, examType, teacher } = req.body;
   try {
     const newGrade = new Grade({ student, subject, grade, examType, teacher });
-    const savedGrade = await newGrade.save();
-    res.status(201).json(savedGrade);
+    await newGrade.save();
+    res.status(201).json(newGrade);
   } catch (error) {
     res.status(400).json({ msg: error.message });
   }
 };
 
-// @desc    Get all grades for a specific student
-// @access  Private (Admin, Teacher)
-const getGradesForStudent = async (req, res) => {
-  try {
-    const grades = await Grade.find({ student: req.params.studentId })
-      .populate('subject', 'name')
-      .populate('teacher', 'firstName lastName');
-    res.json(grades);
-  } catch (error) {
-    res.status(500).json({ msg: 'Server Error' });
-  }
-};
-
-// @desc    Update a grade
-// @access  Private (Admin, Teacher)
-const updateGrade = async (req, res) => {
-  try {
-    const grade = await Grade.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!grade) {
-      return res.status(404).json({ msg: 'Grade not found' });
-    }
-    res.json(grade);
-  } catch (error) {
-    res.status(400).json({ msg: error.message });
-  }
-};
-
-// @desc    Delete a grade
-// @access  Private (Admin, Teacher)
-const deleteGrade = async (req, res) => {
-  try {
-    const grade = await Grade.findById(req.params.id);
-    if (grade) {
-      await grade.deleteOne();
-      res.json({ msg: 'Grade removed' });
-    } else {
-      res.status(404).json({ msg: 'Grade not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ msg: 'Server Error' });
-  }
-};
-
-// @desc    Get results for a specific class
-// @access  Private (Admin, Teacher)
+// Obtenir les résultats simples (moyenne générale) pour une classe
 const getClassResults = async (req, res) => {
   try {
     const { classId } = req.params;
-
     const targetClass = await Class.findById(classId).select('students');
-    if (!targetClass) {
-      return res.status(404).json({ msg: 'Class not found' });
-    }
-    const studentIds = targetClass.students;
+    if (!targetClass) return res.status(404).json({ msg: 'Classe non trouvée' });
 
+    const studentIds = targetClass.students;
     const results = await Grade.aggregate([
       { $match: { student: { $in: studentIds } } },
-      {
-        $group: {
-          _id: '$student',
-          averageGrade: { $avg: '$grade' },
-        }
-      },
-      {
-        $lookup: {
-          from: 'students',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'studentInfo'
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          studentId: '$_id',
-          studentName: { $concat: [{ $arrayElemAt: ['$studentInfo.firstName', 0] }, ' ', { $arrayElemAt: ['$studentInfo.lastName', 0] }] },
-          average: { $round: ['$averageGrade', 2] },
-        }
-      }
+      { $group: { _id: '$student', averageGrade: { $avg: '$grade' } } },
+      { $lookup: { from: 'students', localField: '_id', foreignField: '_id', as: 'studentInfo' } },
+      { $project: { _id: 0, studentId: '$_id', studentName: { $concat: [{ $arrayElemAt: ['$studentInfo.firstName', 0] }, ' ', { $arrayElemAt: ['$studentInfo.lastName', 0] }] }, average: { $round: ['$averageGrade', 2] } } }
     ]);
-
     res.json(results);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: 'Server Error' });
+    res.status(500).json({ msg: 'Erreur du serveur' });
   }
 };
 
+// Obtenir le bulletin de notes détaillé pour une classe
+const getDetailedClassResults = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const targetClass = await Class.findById(classId).populate('students', 'firstName lastName');
+    if (!targetClass) return res.status(404).json({ msg: 'Classe non trouvée' });
+
+    const allSubjects = await Subject.find({});
+    const studentIds = targetClass.students.map(s => s._id);
+
+    const results = await Grade.aggregate([
+      { $match: { student: { $in: studentIds } } },
+      { $group: { _id: { student: '$student', subject: '$subject' }, averageSubjectGrade: { $avg: '$grade' } } },
+      { $group: { _id: '$_id.student', gradesBySubject: { $push: { subjectId: '$_id.subject', average: '$averageSubjectGrade' } }, overallAverage: { $avg: '$averageSubjectGrade' } } }
+    ]);
+
+    const detailedResults = targetClass.students.map(student => {
+      const studentResult = results.find(r => r._id.equals(student._id));
+      return {
+        studentId: student._id,
+        studentName: `${student.firstName} ${student.lastName}`,
+        gradesBySubject: studentResult ? studentResult.gradesBySubject : [],
+        overallAverage: studentResult ? studentResult.overallAverage : 0
+      };
+    });
+
+    res.json({
+      className: targetClass.name,
+      allSubjects: allSubjects,
+      results: detailedResults
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Erreur du serveur' });
+  }
+};
 
 module.exports = {
   addGrade,
-  getGradesForStudent,
-  updateGrade,
-  deleteGrade,
   getClassResults,
+  getDetailedClassResults,
 };

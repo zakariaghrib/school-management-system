@@ -9,19 +9,27 @@ const addGrade = (gradeData, token) => {
   });
 };
 
-// Obtenir les résultats pour une classe
+// Obtenir les résultats simples (moyenne générale) pour une classe
 const getClassResults = (classId, token) => {
   return axios.get(`${API_URL}results/class/${classId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
 
-// Vous pouvez ajouter d'autres fonctions ici si nécessaire
-// const getGradesForStudent = (studentId, token) => { ... }
+// --- FONCTION MANQUANTE AJOUTÉE ICI ---
+// Obtenir le bulletin de notes détaillé pour une classe
+const getDetailedClassResults = (classId, token) => {
+  return axios.get(`${API_URL}results/class/${classId}/detailed`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+// ------------------------------------
 
+// Exporter toutes les fonctions
 const gradeService = {
   addGrade,
   getClassResults,
+  getDetailedClassResults, // Assurez-vous qu'elle est bien exportée ici
 };
 
 export default gradeService;
