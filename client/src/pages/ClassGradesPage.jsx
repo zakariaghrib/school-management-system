@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import subjectService from '../services/subjectService';
 import classService from '../services/classService';
 import gradeService from '../services/gradeService';
+
+// Importations MUI
+import { 
+  Container, Typography, Box, Paper, Table, TableBody, 
+  TableCell, TableContainer, TableHead, TableRow, Button,
+  Select, MenuItem, FormControl, InputLabel, TextField, IconButton
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const ClassGradesPage = () => {
   const { classId } = useParams();
@@ -11,69 +19,115 @@ const ClassGradesPage = () => {
   
   const [classInfo, setClassInfo] = useState(null);
   const [subjects, setSubjects] = useState([]);
+  const [grades, setGrades] = useState([]);
   const [message, setMessage] = useState('');
 
-  // États du formulaire
   const [student, setStudent] = useState('');
   const [subject, setSubject] = useState('');
   const [grade, setGrade] = useState('');
   const [examType, setExamType] = useState('Contrôle 1');
 
-  useEffect(() => {
-    if (user && user.token) {
-      // Charger les infos de la classe (qui inclut les étudiants)
+  const loadData = () => {
+    if (user && classId) {
       classService.getClassById(classId, user.token).then(res => setClassInfo(res.data));
-      // Charger la liste des matières
       subjectService.getAllSubjects(user.token).then(res => setSubjects(res.data));
+      gradeService.getGradesForClass(classId, user.token).then(res => setGrades(res.data));
     }
-  }, [classId, user]);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [user, classId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const gradeData = { student, subject, grade, examType, teacher: user.id };
     try {
       await gradeService.addGrade(gradeData, user.token);
-      setMessage(`Note ${grade}/20 ajoutée avec succès !`);
-      // Vider le formulaire
+      setMessage("Note ajoutée avec succès !");
       setStudent(''); setSubject(''); setGrade('');
+      loadData();
     } catch (error) {
-      setMessage(error.response?.data?.msg || "Erreur lors de l'ajout de la note.");
+      setMessage(error.response?.data?.msg || "Erreur");
     }
   };
 
-  if (!classInfo) return <p>Chargement des informations de la classe...</p>;
+  const handleDelete = async (gradeId) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) {
+      try {
+        await gradeService.deleteGrade(gradeId, user.token);
+        loadData();
+      } catch (error) {
+        setMessage(error.response?.data?.msg || "Erreur de suppression");
+      }
+    }
+  };
+
+  if (!classInfo) return <p>Chargement...</p>;
 
   return (
-    <div>
-      <h2>Gérer les Notes pour la Classe : {classInfo.name}</h2>
-      <form onSubmit={handleSubmit} style={{ border: '1px solid #ddd', padding: '1rem' }}>
-        <h4>Ajouter une note</h4>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Étudiant : </label>
-          <select value={student} onChange={e => setStudent(e.target.value)} required>
-            <option value="">-- Sélectionnez un étudiant --</option>
-            {classInfo.students.map(s => <option key={s._id} value={s._id}>{s.firstName} {s.lastName}</option>)}
-          </select>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Matière : </label>
-          <select value={subject} onChange={e => setSubject(e.target.value)} required>
-            <option value="">-- Sélectionnez une matière --</option>
-            {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-          </select>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Type d'examen : </label>
-          <input type="text" placeholder="Ex: Devoir Surveillé 1" value={examType} onChange={e => setExamType(e.target.value)} required/>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Note / 20 : </label>
-          <input type="number" step="0.5" min="0" max="20" placeholder="15.5" value={grade} onChange={e => setGrade(e.target.value)} required/>
-        </div>
-        <button type="submit">Ajouter la Note</button>
-      </form>
-      {message && <p style={{ color: 'green', marginTop: '1rem' }}>{message}</p>}
-    </div>
+    <Container maxWidth="lg">
+      <Box sx={{ my: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" component="h1">
+          Gestion des Notes : {classInfo.name}
+        </Typography>
+        <Button variant="outlined" component={Link} to={`/classes/${classId}/results`}>
+          Voir le bulletin
+        </Button>
+      </Box>
+
+      <Paper sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h6">Ajouter une note</Typography>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+          <FormControl sx={{ minWidth: 200, flexGrow: 1 }}>
+            <InputLabel>Étudiant</InputLabel>
+            <Select value={student} label="Étudiant" onChange={e => setStudent(e.target.value)} required>
+              {classInfo.students.map(s => <MenuItem key={s._id} value={s._id}>{s.firstName} {s.lastName}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 200, flexGrow: 1 }}>
+            <InputLabel>Matière</InputLabel>
+            <Select value={subject} label="Matière" onChange={e => setSubject(e.target.value)} required>
+              {subjects.map(s => <MenuItem key={s._id} value={s._id}>{s.name}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <TextField label="Type d'examen" value={examType} onChange={e => setExamType(e.target.value)} required sx={{ minWidth: 150, flexGrow: 1 }} />
+          <TextField label="Note / 20" type="number" value={grade} onChange={e => setGrade(e.target.value)} required sx={{ width: 120 }}/>
+          <Button type="submit" variant="contained">Ajouter</Button>
+        </Box>
+        {message && <Typography color="primary.main" sx={{ mt: 2 }}>{message}</Typography>}
+      </Paper>
+
+      <Typography variant="h6">Notes enregistrées</Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Étudiant</TableCell>
+              <TableCell>Matière</TableCell>
+              <TableCell>Type d'examen</TableCell>
+              <TableCell>Note</TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {grades.map((g) => (
+              <TableRow key={g._id} hover>
+                <TableCell>{g.student?.firstName} {g.student?.lastName}</TableCell>
+                <TableCell>{g.subject?.name}</TableCell>
+                <TableCell>{g.examType}</TableCell>
+                <TableCell>{g.grade}</TableCell>
+                <TableCell align="right">
+                  <IconButton onClick={() => handleDelete(g._id)}>
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
 

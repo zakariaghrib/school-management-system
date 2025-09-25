@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const {
   addGrade,
-  getClassResults,
+  getGradesForClass,
+  updateGrade,
+  deleteGrade,
   getDetailedClassResults,
 } = require('../controllers/gradeController.js');
 
@@ -14,10 +16,11 @@ router.use(authorize('admin', 'teacher'));
 
 router.route('/').post(addGrade);
 
-// Route pour les résultats simples (moyenne générale)
-router.get('/results/class/:classId', getClassResults);
-
-// Route pour le bulletin de notes détaillé
 router.get('/results/class/:classId/detailed', getDetailedClassResults);
+router.get('/class/:classId', getGradesForClass);
+
+router.route('/:id')
+  .put(updateGrade)
+  .delete(deleteGrade);
 
 module.exports = router;
