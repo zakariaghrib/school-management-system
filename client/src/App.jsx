@@ -18,8 +18,9 @@ import ClassListPage from './pages/ClassListPage.jsx';
 import AddClassPage from './pages/AddClassPage.jsx';
 import ClassGradesPage from './pages/ClassGradesPage.jsx';
 import ClassResultsPage from './pages/ClassResultsPage.jsx';
-import ResultsHubPage from './pages/ResultsHubPage.jsx'; // <-- L'IMPORTATION MANQUANTE
+import ResultsHubPage from './pages/ResultsHubPage.jsx';
 import GradeEntryHubPage from './pages/GradeEntryHubPage.jsx';
+import SubjectListPage from './pages/SubjectListPage.jsx';
 
 function App() {
   return (
@@ -43,6 +44,9 @@ function App() {
 
           <Route path="/classes" element={<ProtectedRoute><ClassListPage /></ProtectedRoute>} />
           <Route path="/classes/add" element={<ProtectedRoute><AddClassPage /></ProtectedRoute>} />
+          
+          <Route path="/subjects" element={<ProtectedRoute><SubjectListPage /></ProtectedRoute>} />
+
           <Route path="/class/:classId/grades" element={<ProtectedRoute><ClassGradesPage /></ProtectedRoute>} />
           <Route path="/classes/:classId/results" element={<ProtectedRoute><ClassResultsPage /></ProtectedRoute>} />
 

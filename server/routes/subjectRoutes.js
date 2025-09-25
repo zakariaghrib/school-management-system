@@ -1,4 +1,3 @@
-// server/routes/subjectRoutes.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -11,15 +10,14 @@ const {
 const { protect } = require('../middlewares/authMiddleware.js');
 const { authorize } = require('../middlewares/authorizationMiddleware.js');
 
-// Protéger toutes les routes et les restreindre aux administrateurs
-router.use(protect, authorize('admin'));
+router.use(protect);
 
 router.route('/')
-  .post(createSubject)
-  .get(getAllSubjects);
+  .get(authorize('admin', 'teacher'), getAllSubjects)
+  .post(authorize('admin'), createSubject);
 
 router.route('/:id')
-  .put(updateSubject)
-  .delete(deleteSubject);
+  .put(authorize('admin'), updateSubject)
+  .delete(authorize('admin'), deleteSubject);
 
 module.exports = router;

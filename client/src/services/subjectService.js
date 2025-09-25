@@ -9,10 +9,24 @@ const getAllSubjects = (token) => {
   });
 };
 
-// Vous pouvez ajouter d'autres fonctions ici plus tard (create, update, delete)
+// Créer une nouvelle matière
+const createSubject = (subjectData, token) => {
+  return axios.post(API_URL, subjectData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+// Supprimer une matière
+const deleteSubject = (id, token) => {
+  return axios.delete(API_URL + id, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
 
 const subjectService = {
   getAllSubjects,
+  createSubject,
+  deleteSubject,
 };
 
 export default subjectService;

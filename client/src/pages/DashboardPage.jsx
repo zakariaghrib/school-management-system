@@ -1,22 +1,24 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Container, Typography, Box, Paper } from '@mui/material';
+
+// Importations MUI pour le style
+import { Container, Typography, Box, Paper, Grid } from '@mui/material';
 
 // Style pour les cartes de navigation
 const cardStyle = {
-  border: '1px solid #ddd',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '8px',
-  textAlign: 'center',
-  width: '220px',
-  display: 'inline-block',
+  p: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: 140,
   textDecoration: 'none',
   color: 'inherit',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-  verticalAlign: 'top',
-  minHeight: '120px'
+  transition: 'box-shadow 0.3s',
+  '&:hover': {
+    boxShadow: 6,
+  },
 };
 
 const DashboardPage = () => {
@@ -27,56 +29,64 @@ const DashboardPage = () => {
   }
 
   return (
-    <Container>
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Tableau de Bord
-        </Typography>
-        <Typography>
-          Bienvenue ! Votre rôle est : <strong>{user.role}</strong>.
-        </Typography>
-      </Box>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Tableau de Bord
+      </Typography>
+      <Typography>
+        Bienvenue ! Votre rôle est : <strong>{user.role}</strong>.
+      </Typography>
+      <hr style={{ margin: '20px 0' }}/>
       
-      <hr />
-      
-      <Typography variant="h5" sx={{ mt: 4 }}>Accès Rapide</Typography>
-      
-      <Box sx={{ mt: 2 }}>
-        {/* Liens pour les admins et les enseignants */}
+      <Grid container spacing={3}>
+        {/* Cartes pour Admins et Enseignants */}
         {(user.role === 'admin' || user.role === 'teacher') && (
           <>
-            <Paper component={Link} to="/grades/entry" sx={cardStyle}>
-              <Typography variant="h6">Saisie des Notes</Typography>
-              <Typography variant="body2">Choisir une classe pour ajouter des notes.</Typography>
-            </Paper>
-
-            <Paper component={Link} to="/results" sx={cardStyle}>
-              <Typography variant="h6">Consultation des Résultats</Typography>
-              <Typography variant="body2">Générer les bulletins par classe.</Typography>
-            </Paper>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper component={Link} to="/grades/entry" sx={cardStyle} elevation={3}>
+                <Typography variant="h6">Saisie des Notes</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Choisir une classe pour ajouter des notes.</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper component={Link} to="/results" sx={cardStyle} elevation={3}>
+                <Typography variant="h6">Consultation des Résultats</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Générer les bulletins par classe.</Typography>
+              </Paper>
+            </Grid>
           </>
         )}
 
-        {/* Liens pour les admins seulement */}
+        {/* Cartes pour Admins seulement */}
         {user.role === 'admin' && (
           <>
-            <Paper component={Link} to="/students" sx={cardStyle}>
-              <Typography variant="h6">Gestion des Étudiants</Typography>
-              <Typography variant="body2">Voir et gérer les listes d'étudiants.</Typography>
-            </Paper>
-
-            <Paper component={Link} to="/teachers" sx={cardStyle}>
-              <Typography variant="h6">Gestion des Enseignants</Typography>
-              <Typography variant="body2">Ajouter et gérer les enseignants.</Typography>
-            </Paper>
-            
-            <Paper component={Link} to="/classes" sx={cardStyle}>
-              <Typography variant="h6">Gestion des Classes</Typography>
-              <Typography variant="body2">Organiser les classes et les effectifs.</Typography>
-            </Paper>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper component={Link} to="/students" sx={cardStyle} elevation={3}>
+                <Typography variant="h6">Gestion des Étudiants</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Voir et gérer les listes d'étudiants.</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper component={Link} to="/teachers" sx={cardStyle} elevation={3}>
+                <Typography variant="h6">Gestion des Enseignants</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Ajouter et gérer les enseignants.</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper component={Link} to="/classes" sx={cardStyle} elevation={3}>
+                <Typography variant="h6">Gestion des Classes</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Organiser les classes et les effectifs.</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper component={Link} to="/subjects" sx={cardStyle} elevation={3}>
+                <Typography variant="h6">Gestion des Matières</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Ajouter et supprimer des matières.</Typography>
+              </Paper>
+            </Grid>
           </>
         )}
-      </Box>
+      </Grid>
     </Container>
   );
 };
