@@ -5,6 +5,7 @@ const {
   getAllClasses,
   getClassById,
   updateClass,
+  deleteClass,
   addStudentToClass,
   removeStudentFromClass,
 } = require('../controllers/classController.js');
@@ -20,7 +21,8 @@ router.route('/')
 
 router.route('/:id')
   .get(authorize('admin', 'teacher'), getClassById)
-  .put(authorize('admin'), updateClass);
+  .put(authorize('admin'), updateClass)
+  .delete(authorize('admin'), deleteClass);
 
 router.route('/:classId/students/:studentId')
   .put(authorize('admin', 'teacher'), addStudentToClass)

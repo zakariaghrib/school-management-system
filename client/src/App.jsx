@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// --- Importation des Composants de Base ---
+// --- Composants de Base ---
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
@@ -16,6 +16,7 @@ import AddTeacherPage from './pages/AddTeacherPage.jsx';
 import EditTeacherPage from './pages/EditTeacherPage.jsx';
 import ClassListPage from './pages/ClassListPage.jsx';
 import AddClassPage from './pages/AddClassPage.jsx';
+import EditClassPage from './pages/EditClassPage.jsx';
 import ClassGradesPage from './pages/ClassGradesPage.jsx';
 import ClassResultsPage from './pages/ClassResultsPage.jsx';
 import ResultsHubPage from './pages/ResultsHubPage.jsx';
@@ -33,25 +34,72 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
 
           {/* --- Routes Protégées --- */}
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route 
+            path="/dashboard" 
+            element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} 
+          />
           
-          <Route path="/students" element={<ProtectedRoute><StudentListPage /></ProtectedRoute>} />
-          <Route path="/students/add" element={<ProtectedRoute><AddStudentPage /></ProtectedRoute>} />
+          {/* Routes pour les Étudiants */}
+          <Route 
+            path="/students" 
+            element={<ProtectedRoute><StudentListPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/students/add" 
+            element={<ProtectedRoute><AddStudentPage /></ProtectedRoute>} 
+          />
           
-          <Route path="/teachers" element={<ProtectedRoute><TeacherListPage /></ProtectedRoute>} />
-          <Route path="/teachers/add" element={<ProtectedRoute><AddTeacherPage /></ProtectedRoute>} />
-          <Route path="/teachers/edit/:id" element={<ProtectedRoute><EditTeacherPage /></ProtectedRoute>} />
+          {/* Routes pour les Enseignants */}
+          <Route 
+            path="/teachers" 
+            element={<ProtectedRoute><TeacherListPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/teachers/add" 
+            element={<ProtectedRoute><AddTeacherPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/teachers/edit/:id" 
+            element={<ProtectedRoute><EditTeacherPage /></ProtectedRoute>} 
+          />
 
-          <Route path="/classes" element={<ProtectedRoute><ClassListPage /></ProtectedRoute>} />
-          <Route path="/classes/add" element={<ProtectedRoute><AddClassPage /></ProtectedRoute>} />
+          {/* Routes pour les Classes */}
+          <Route 
+            path="/classes" 
+            element={<ProtectedRoute><ClassListPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/classes/add" 
+            element={<ProtectedRoute><AddClassPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/classes/edit/:id" 
+            element={<ProtectedRoute><EditClassPage /></ProtectedRoute>} 
+          />
           
-          <Route path="/subjects" element={<ProtectedRoute><SubjectListPage /></ProtectedRoute>} />
+          {/* Routes pour les Notes et Résultats */}
+          <Route 
+            path="/class/:classId/grades" 
+            element={<ProtectedRoute><ClassGradesPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/classes/:classId/results" 
+            element={<ProtectedRoute><ClassResultsPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/results" 
+            element={<ProtectedRoute><ResultsHubPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/grades/entry" 
+            element={<ProtectedRoute><GradeEntryHubPage /></ProtectedRoute>} 
+          />
 
-          <Route path="/class/:classId/grades" element={<ProtectedRoute><ClassGradesPage /></ProtectedRoute>} />
-          <Route path="/classes/:classId/results" element={<ProtectedRoute><ClassResultsPage /></ProtectedRoute>} />
-
-          <Route path="/results" element={<ProtectedRoute><ResultsHubPage /></ProtectedRoute>} />
-          <Route path="/grades/entry" element={<ProtectedRoute><GradeEntryHubPage /></ProtectedRoute>} />
+          {/* Route pour les Matières */}
+          <Route 
+            path="/subjects" 
+            element={<ProtectedRoute><SubjectListPage /></ProtectedRoute>} 
+          />
 
           {/* --- Redirection par défaut --- */}
           <Route path="*" element={<Navigate to="/dashboard" />} />
@@ -62,3 +110,4 @@ function App() {
 }
 
 export default App;
+
