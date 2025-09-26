@@ -13,11 +13,17 @@ const studentSchema = new mongoose.Schema({
     type: Date, 
     required: true 
   },
-  // --- LIGNE AJOUTÉE ---
   class: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Class', 
-    required: false 
+    ref: 'Class' 
+  },
+  // --- LIGNE AJOUTÉE ---
+  // Lien vers le document User qui contient l'email et le mot de passe
+  userAccount: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true,
+    unique: true // Chaque profil étudiant ne peut être lié qu'à un seul compte
   },
 }, { timestamps: true });
 
