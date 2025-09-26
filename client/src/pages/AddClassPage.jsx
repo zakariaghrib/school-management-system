@@ -1,30 +1,38 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import classService from '../services/classService';
-import teacherService from '../services/teacherService'; // On a besoin des profs
+import teacherService from '../services/teacherService';
 import { AuthContext } from '../context/AuthContext';
+
+// Importations MUI
+import { 
+  Container, Typography, Box, TextField, Button, 
+  FormControl, InputLabel, Select, MenuItem 
+} from '@mui/material';
 
 const AddClassPage = () => {
   const [name, setName] = useState('');
   const [year, setYear] = useState('');
   const [mainTeacher, setMainTeacher] = useState('');
-  const [teachers, setTeachers] = useState([]); // Pour le menu déroulant
+  const [teachers, setTeachers] = useState([]);
   const [message, setMessage] = useState('');
   
-  const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Charger la liste des enseignants au montage du composant
   useEffect(() => {
-    teacherService.getAllTeachers(user.token)
-      .then(response => setTeachers(response.data))
-      .catch(() => setMessage("Erreur de chargement des enseignants."));
-  }, [user.token]);
+    if (token) {
+      // Cet appel va maintenant fonctionner correctement
+      teacherService.getAllTeachers(token)
+        .then(response => setTeachers(response.data))
+        .catch(() => setMessage("Erreur de chargement des enseignants."));
+    }
+  }, [token]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await classService.createClass({ name, year, mainTeacher }, user.token);
+      await classService.createClass({ name, year, mainTeacher }, token);
       navigate('/classes');
     } catch (error) {
       setMessage(error.response?.data?.msg || "Erreur lors de la création.");
@@ -32,32 +40,60 @@ const AddClassPage = () => {
   };
 
   return (
-    <div>
-      <h2>Ajouter une nouvelle Classe</h2>
-      <form onSubmit={handleCreate}>
-        <div>
-          <label>Nom de la classe (ex: 6ème A)</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} required />
-        </div>
-        <div>
-          <label>Année scolaire (ex: 2025-2026)</label>
-          <input type="text" value={year} onChange={e => setYear(e.target.value)} required />
-        </div>
-        <div>
-          <label>Professeur Principal</label>
-          <select value={mainTeacher} onChange={e => setMainTeacher(e.target.value)}>
-            <option value="">-- Sélectionnez un enseignant --</option>
-            {teachers.map(teacher => (
-              <option key={teacher._id} value={teacher._id}>
-                {teacher.firstName} {teacher.lastName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button type="submit">Créer la Classe</button>
-      </form>
-      {message && <p style={{ color: 'red' }}>{message}</p>}
-    </div>
+    <Container maxWidth="sm">
+      <Box sx={{ mt: 4 }}>
+        <Typography component="h1" variant="h5">
+          Ajouter une nouvelle Classe
+        </Typography>
+        <Box component="form" onSubmit={handleCreate} sx={{ mt: 3, width: '100%' }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="name"
+            label="Nom de la classe (ex: 6ème A)"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="year"
+            label="Année scolaire (ex: 2025-2026)"
+            value={year}
+            onChange={e => setYear(e.target.value)}
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="teacher-select-label">Professeur Principal</InputLabel>
+            <Select
+              labelId="teacher-select-label"
+              value={mainTeacher}
+              label="Professeur Principal"
+              onChange={e => setMainTeacher(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>-- Sélectionnez un enseignant --</em>
+              </MenuItem>
+              {teachers.map(teacher => (
+                <MenuItem key={teacher._id} value={teacher._id}>
+                  {teacher.firstName} {teacher.lastName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Créer la Classe
+          </Button>
+          {message && <Typography color="error">{message}</Typography>}
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

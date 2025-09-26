@@ -1,23 +1,20 @@
-// server/routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
 const { 
   registerUser, 
-  loginUser, 
-  getUserProfile 
+  loginUser,
+  getAllUsers,
+  resetPassword
 } = require('../controllers/userController.js');
 const { protect } = require('../middlewares/authMiddleware.js');
+const { authorize } = require('../middlewares/authorizationMiddleware.js');
 
-// === Public Routes ===
-// URL -> POST http://localhost:5000/api/users/register
+// --- Routes Publiques ---
 router.post('/register', registerUser);
-
-// URL -> POST http://localhost:5000/api/users/login
 router.post('/login', loginUser);
 
-// === Private Routes ===
-// URL -> GET http://localhost:5000/api/users/profile
-// The 'protect' middleware runs first. If the token is valid, it calls getUserProfile.
-router.get('/profile', protect, getUserProfile);
+// --- Routes Protégées pour l'Admin ---
+router.get('/', protect, authorize('admin'), getAllUsers);
+router.put('/reset-password/:id', protect, authorize('admin'), resetPassword);
 
 module.exports = router;

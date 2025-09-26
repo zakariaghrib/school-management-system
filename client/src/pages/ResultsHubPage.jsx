@@ -7,19 +7,18 @@ import { Container, Typography, List, ListItem, ListItemButton, ListItemText, Pa
 const ResultsHubPage = () => {
   const [classes, setClasses] = useState([]);
   const [message, setMessage] = useState('');
-  const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext); // Utiliser le token du contexte
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user?.token) {
-      classService.getAllClasses(user.token)
+    if (token) { // S'assurer que le token existe
+      classService.getAllClasses(token) // Passer le token
         .then(response => setClasses(response.data))
         .catch(error => setMessage(error.response?.data?.msg || "Erreur de chargement des classes."));
     }
-  }, [user]);
+  }, [token]);
 
   const handleClassSelect = (classId) => {
-    // Redirige vers la page des résultats pour la classe sélectionnée
     navigate(`/classes/${classId}/results`);
   };
 
@@ -30,7 +29,7 @@ const ResultsHubPage = () => {
           Centre de Consultation des Résultats
         </Typography>
         <Typography variant="body1">
-          Veuillez sélectionner une classe pour générer et afficher son bulletin de notes.
+          Veuillez sélectionner une classe pour générer son bulletin de notes.
         </Typography>
       </Box>
 
@@ -44,14 +43,14 @@ const ResultsHubPage = () => {
                 <ListItemButton onClick={() => handleClassSelect(cls._id)}>
                   <ListItemText 
                     primary={cls.name} 
-                    secondary={`Année: ${cls.year} - ${cls.students.length} étudiant(s)`} 
+                    secondary={`Année: ${cls.year}`} 
                   />
                 </ListItemButton>
               </ListItem>
             ))
           ) : (
             <ListItem>
-              <ListItemText primary="Aucune classe n'a été trouvée. Veuillez en créer une dans la 'Gestion des Classes'." />
+              <ListItemText primary="Aucune classe trouvée." />
             </ListItem>
           )}
         </List>

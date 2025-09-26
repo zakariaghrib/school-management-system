@@ -13,12 +13,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 const TeacherListPage = () => {
   const [teachers, setTeachers] = useState([]);
   const [message, setMessage] = useState('');
-  const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext); // Utiliser le token du contexte
   const navigate = useNavigate();
 
   const loadTeachers = () => {
-    if (user?.token) {
-      teacherService.getAllTeachers(user.token)
+    if (token) {
+      teacherService.getAllTeachers(token) // Passer le token
         .then(response => setTeachers(response.data))
         .catch(() => setMessage("Erreur de chargement des enseignants."));
     }
@@ -26,12 +26,12 @@ const TeacherListPage = () => {
 
   useEffect(() => {
     loadTeachers();
-  }, [user]);
+  }, [token]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?')) {
+    if (window.confirm('Êtes-vous sûr ?')) {
       try {
-        await teacherService.deleteTeacher(id, user.token);
+        await teacherService.deleteTeacher(id, token); // Passer le token
         loadTeachers();
       } catch (error) {
         setMessage(error.response?.data?.msg || "Erreur de suppression.");

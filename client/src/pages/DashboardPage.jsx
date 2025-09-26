@@ -1,8 +1,6 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-
-// Importations MUI pour le style
 import { Container, Typography, Box, Paper, Grid } from '@mui/material';
 
 // Style pour les cartes de navigation
@@ -84,6 +82,13 @@ const DashboardPage = () => {
                 <Typography variant="body2" sx={{ mt: 1 }}>Ajouter et supprimer des matières.</Typography>
               </Paper>
             </Grid>
+            {/* --- NOUVELLE CARTE AJOUTÉE ICI --- */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper component={Link} to="/users" sx={cardStyle} elevation={3}>
+                <Typography variant="h6">Gestion des Utilisateurs</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Réinitialiser les mots de passe.</Typography>
+              </Paper>
+            </Grid>
           </>
         )}
       </Grid>
@@ -92,3 +97,4 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+

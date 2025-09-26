@@ -17,37 +17,34 @@ const StudentListPage = () => {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [message, setMessage] = useState('');
-  const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext); // Utiliser le token
   const navigate = useNavigate();
 
-  // Fonction pour charger les étudiants, maintenant réutilisable
   const loadStudents = () => {
-    if (user?.token) {
-      studentService.getAllStudents(user.token, selectedClass || null)
+    if (token) {
+      studentService.getAllStudents(token, selectedClass || null)
         .then(response => setStudents(response.data))
         .catch(error => setMessage(error.response?.data?.msg || "Erreur de chargement."));
     }
   };
 
-  // Charger la liste des classes une seule fois
   useEffect(() => {
-    if (user?.token) {
-      classService.getAllClasses(user.token)
+    if (token) {
+      classService.getAllClasses(token)
         .then(response => setClasses(response.data))
         .catch(() => setMessage("Erreur de chargement des classes."));
     }
-  }, [user]);
+  }, [token]);
 
-  // Recharger les étudiants à chaque fois que le filtre change
   useEffect(() => {
     loadStudents();
-  }, [selectedClass, user]);
+  }, [selectedClass, token]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')) {
+    if (window.confirm('Êtes-vous sûr ?')) {
       try {
-        await studentService.deleteStudent(id, user.token);
-        loadStudents(); // Recharger la liste
+        await studentService.deleteStudent(id, token);
+        loadStudents();
       } catch (error) {
         setMessage(error.response?.data?.msg || "Erreur de suppression.");
       }
@@ -56,7 +53,7 @@ const StudentListPage = () => {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 4 }}>
+       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 4 }}>
         <Typography variant="h4">Gestion des Étudiants</Typography>
         <Button variant="contained" startIcon={<AddIcon />} component={Link} to="/students/add">
           Ajouter un Étudiant

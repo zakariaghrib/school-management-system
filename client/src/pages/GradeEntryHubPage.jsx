@@ -2,53 +2,45 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import classService from '../services/classService';
 import { AuthContext } from '../context/AuthContext';
-import { Container, Typography, List, ListItem, ListItemButton, ListItemText, Paper } from '@mui/material';
+import { Container, Typography, List, ListItem, ListItemButton, ListItemText, Paper, Box } from '@mui/material';
 
 const GradeEntryHubPage = () => {
   const [classes, setClasses] = useState([]);
   const [message, setMessage] = useState('');
-  const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext); // Utiliser le token
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user?.token) {
-      classService.getAllClasses(user.token)
+    if (token) {
+      classService.getAllClasses(token) // Passer le token
         .then(response => setClasses(response.data))
-        .catch(error => setMessage(error.response?.data?.msg || "Erreur de chargement des classes."));
+        .catch(error => setMessage(error.response?.data?.msg || "Erreur de chargement."));
     }
-  }, [user]);
-
-  // Redirige vers la page de saisie des notes pour la classe sélectionnée
-  const handleClassSelect = (classId) => {
-    navigate(`/class/${classId}/grades`);
-  };
+  }, [token]);
 
   return (
     <Container maxWidth="md">
-      <Typography variant="h4" component="h1" sx={{ my: 4 }}>
-        Portail de Saisie des Notes
-      </Typography>
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        Veuillez sélectionner une classe pour commencer à saisir les notes des étudiants.
-      </Typography>
+      <Box sx={{ my: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Portail de Saisie des Notes
+        </Typography>
+        <Typography variant="body1">
+          Veuillez sélectionner une classe pour commencer à saisir ou modifier les notes.
+        </Typography>
+      </Box>
       {message && <Typography color="error">{message}</Typography>}
       <Paper>
         <List>
           {classes.map(cls => (
             <ListItem key={cls._id} disablePadding divider>
-              <ListItemButton onClick={() => handleClassSelect(cls._id)}>
+              <ListItemButton onClick={() => navigate(`/class/${cls._id}/grades`)}>
                 <ListItemText 
                   primary={cls.name} 
-                  secondary={`Année: ${cls.year} - Prof. Principal: ${cls.mainTeacher ? cls.mainTeacher.firstName + ' ' + cls.mainTeacher.lastName : 'N/A'}`} 
+                  secondary={`Année: ${cls.year}`} 
                 />
               </ListItemButton>
             </ListItem>
           ))}
-          {classes.length === 0 && (
-            <ListItem>
-              <ListItemText primary="Aucune classe n'a été trouvée." />
-            </ListItem>
-          )}
         </List>
       </Paper>
     </Container>

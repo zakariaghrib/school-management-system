@@ -5,9 +5,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
-// --- Importation de toutes les Pages ---
+// --- Pages Publiques ---
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
+
+// --- Pages Protégées ---
 import DashboardPage from './pages/DashboardPage.jsx';
 import StudentListPage from './pages/StudentListPage.jsx';
 import AddStudentPage from './pages/AddStudentPage.jsx';
@@ -23,6 +25,7 @@ import ClassResultsPage from './pages/ClassResultsPage.jsx';
 import ResultsHubPage from './pages/ResultsHubPage.jsx';
 import GradeEntryHubPage from './pages/GradeEntryHubPage.jsx';
 import SubjectListPage from './pages/SubjectListPage.jsx';
+import UserListPage from './pages/UserListPage.jsx';
 
 function App() {
   return (
@@ -106,6 +109,12 @@ function App() {
             element={<ProtectedRoute><SubjectListPage /></ProtectedRoute>} 
           />
 
+          {/* Route pour les Utilisateurs (Admin) */}
+          <Route 
+            path="/users" 
+            element={<ProtectedRoute><UserListPage /></ProtectedRoute>} 
+          />
+
           {/* --- Redirection par défaut --- */}
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
@@ -115,3 +124,4 @@ function App() {
 }
 
 export default App;
+

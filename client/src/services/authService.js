@@ -6,8 +6,9 @@ const register = (userData) => {
   return axios.post(API_URL + 'register', userData);
 };
 
-const login = (userData) => {
-  return axios.post(API_URL + 'login', userData);
+// La fonction login attend 'email' et 'password'
+const login = (email, password) => {
+  return axios.post(API_URL + 'login', { email, password });
 };
 
 const authService = {

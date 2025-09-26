@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext.js';
+import { AuthContext } from '../context/AuthContext';
+import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -12,19 +13,24 @@ const Navbar = () => {
   };
 
   return (
-    <nav style={{ padding: '1rem', background: '#eee', marginBottom: '1rem' }}>
-      <Link to={user ? "/dashboard" : "/login"} style={{ marginRight: '1rem' }}>
-        Gestion École
-      </Link>
-      {user ? (
-        <button onClick={handleLogout}>Déconnexion</button>
-      ) : (
-        <>
-          <Link to="/login" style={{ marginRight: '1rem' }}>Connexion</Link>
-          <Link to="/register">Inscription</Link>
-        </>
-      )}
-    </nav>
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" component={Link} to="/dashboard" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}>
+          Gestion École
+        </Typography>
+        {user ? (
+          <>
+            <Typography sx={{ mr: 2 }}>Bonjour, {user.name}</Typography>
+            <Button color="inherit" onClick={handleLogout}>Déconnexion</Button>
+          </>
+        ) : (
+          <>
+            <Button color="inherit" component={Link} to="/login">Connexion</Button>
+            <Button color="inherit" component={Link} to="/register">Inscription</Button>
+          </>
+        )}
+      </Toolbar>
+    </AppBar>
   );
 };
 

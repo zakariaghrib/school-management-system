@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react'; // <-- CORRECTION ICI
+import React, { useState, useEffect, useContext } from 'react';
 import subjectService from '../services/subjectService';
 import { AuthContext } from '../context/AuthContext';
-
-// Importations MUI
 import { 
   Container, Typography, Box, TextField, Button,
   List, ListItem, ListItemText, IconButton, Paper
@@ -13,11 +11,11 @@ const SubjectListPage = () => {
   const [subjects, setSubjects] = useState([]);
   const [newSubjectName, setNewSubjectName] = useState('');
   const [message, setMessage] = useState('');
-  const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext); // Utiliser le token
 
   const loadSubjects = () => {
-    if (user?.token) {
-      subjectService.getAllSubjects(user.token)
+    if (token) {
+      subjectService.getAllSubjects(token) // Passer le token
         .then(response => setSubjects(response.data))
         .catch(() => setMessage("Erreur de chargement des matières."));
     }
@@ -25,24 +23,24 @@ const SubjectListPage = () => {
 
   useEffect(() => {
     loadSubjects();
-  }, [user]);
+  }, [token]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await subjectService.createSubject({ name: newSubjectName }, user.token);
+      await subjectService.createSubject({ name: newSubjectName }, token); // Passer le token
       setNewSubjectName('');
-      loadSubjects(); // Recharger la liste
+      loadSubjects();
     } catch (error) {
-      setMessage(error.response?.data?.msg || "Erreur lors de la création.");
+      setMessage(error.response?.data?.msg || "Erreur de création.");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette matière ?')) {
+    if (window.confirm('Êtes-vous sûr ?')) {
       try {
-        await subjectService.deleteSubject(id, user.token);
-        loadSubjects(); // Recharger la liste
+        await subjectService.deleteSubject(id, token); // Passer le token
+        loadSubjects();
       } catch (error) {
         setMessage(error.response?.data?.msg || "Erreur de suppression.");
       }
@@ -55,7 +53,6 @@ const SubjectListPage = () => {
         Gestion des Matières
       </Typography>
       
-      {/* Formulaire d'ajout */}
       <Box component="form" onSubmit={handleCreate} sx={{ mb: 4, display: 'flex', gap: 2 }}>
         <TextField
           label="Nom de la nouvelle matière"
@@ -70,7 +67,6 @@ const SubjectListPage = () => {
 
       {message && <Typography color="error">{message}</Typography>}
 
-      {/* Liste des matières */}
       <Paper>
         <List>
           {subjects.map((subject) => (
@@ -78,7 +74,7 @@ const SubjectListPage = () => {
               key={subject._id}
               divider
               secondaryAction={
-                <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(subject._id)}>
+                <IconButton edge="end" onClick={() => handleDelete(subject._id)}>
                   <DeleteIcon color="error" />
                 </IconButton>
               }

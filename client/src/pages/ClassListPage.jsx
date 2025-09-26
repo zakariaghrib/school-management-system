@@ -2,8 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import classService from '../services/classService';
 import { AuthContext } from '../context/AuthContext';
-
-// Importations MUI
 import { 
   Container, Typography, Box, Button, Paper, Table, TableBody, 
   TableCell, TableContainer, TableHead, TableRow, IconButton 
@@ -17,12 +15,12 @@ import GradingIcon from '@mui/icons-material/Grading';
 const ClassListPage = () => {
   const [classes, setClasses] = useState([]);
   const [message, setMessage] = useState('');
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext); // Utiliser le token
   const navigate = useNavigate();
 
   const loadClasses = () => {
-    if (user?.token) {
-      classService.getAllClasses(user.token)
+    if (token) {
+      classService.getAllClasses(token)
         .then(response => setClasses(response.data))
         .catch(() => setMessage("Erreur de chargement des classes."));
     }
@@ -30,13 +28,13 @@ const ClassListPage = () => {
 
   useEffect(() => {
     loadClasses();
-  }, [user]);
+  }, [token]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette classe ?')) {
+    if (window.confirm('Êtes-vous sûr ?')) {
       try {
-        await classService.deleteClass(id, user.token);
-        loadClasses(); // Recharger la liste
+        await classService.deleteClass(id, token);
+        loadClasses();
       } catch (error) {
         setMessage(error.response?.data?.msg || "Erreur de suppression.");
       }

@@ -38,6 +38,7 @@ const getMyClasses = (token) => {
   });
 };
 
+// LA CORRECTION EST ICI : getAllTeachers est bien inclus dans l'objet exporté.
 const teacherService = {
   getAllTeachers,
   getTeacherById,

@@ -1,10 +1,9 @@
-// server/server.js
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // Importer le paquet cors
 const dotenv = require('dotenv');
 const connectDB = require('./config/db.js');
 
-// Importation de toutes les routes
+// Importer toutes les routes
 const userRoutes = require('./routes/userRoutes.js');
 const studentRoutes = require('./routes/studentRoutes.js');
 const teacherRoutes = require('./routes/teacherRoutes.js');
@@ -17,18 +16,17 @@ connectDB();
 
 const app = express();
 
-// --- Configuration de CORS ---
-// Doit être placé avant les routes
-const corsOptions = {
-  origin: 'http://localhost:3000', // Autorise uniquement votre client React
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+// --- CONFIGURATION CORS AJOUTÉE ICI ---
+// Doit être placée avant les routes
+app.use(cors({
+  origin: 'http://localhost:3000' // Autorise uniquement votre client React
+}));
+// ------------------------------------
 
 // Middleware pour parser le JSON
 app.use(express.json());
 
-// --- Monter les routes sur leurs URLs respectives ---
+// Monter les routes
 app.use('/api/users', userRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/teachers', teacherRoutes);
@@ -37,6 +35,4 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/api/grades', gradeRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Le serveur écoute sur le port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
