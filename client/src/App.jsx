@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import StudentListPage from './pages/StudentListPage.jsx';
 import AddStudentPage from './pages/AddStudentPage.jsx';
+import EditStudentPage from './pages/EditStudentPage.jsx';
 import TeacherListPage from './pages/TeacherListPage.jsx';
 import AddTeacherPage from './pages/AddTeacherPage.jsx';
 import EditTeacherPage from './pages/EditTeacherPage.jsx';
@@ -47,6 +48,10 @@ function App() {
           <Route 
             path="/students/add" 
             element={<ProtectedRoute><AddStudentPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/students/edit/:id" 
+            element={<ProtectedRoute><EditStudentPage /></ProtectedRoute>} 
           />
           
           {/* Routes pour les Enseignants */}
@@ -110,4 +115,3 @@ function App() {
 }
 
 export default App;
-
