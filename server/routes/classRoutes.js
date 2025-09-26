@@ -9,7 +9,6 @@ const {
   addStudentToClass,
   removeStudentFromClass,
 } = require('../controllers/classController.js');
-
 const { protect } = require('../middlewares/authMiddleware.js');
 const { authorize } = require('../middlewares/authorizationMiddleware.js');
 

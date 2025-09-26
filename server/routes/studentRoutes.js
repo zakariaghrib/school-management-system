@@ -7,7 +7,6 @@ const {
   updateStudent,
   deleteStudent,
 } = require('../controllers/studentController.js');
-
 const { protect } = require('../middlewares/authMiddleware.js');
 const { authorize } = require('../middlewares/authorizationMiddleware.js');
 

@@ -1,31 +1,35 @@
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
-  firstName: { 
-    type: String, 
-    required: true 
+  firstName: {
+    type: String,
+    required: [true, 'Le prénom est requis.'],
+    trim: true
   },
-  lastName: { 
-    type: String, 
-    required: true 
+  lastName: {
+    type: String,
+    required: [true, 'Le nom de famille est requis.'],
+    trim: true
   },
-  dateOfBirth: { 
-    type: Date, 
-    required: true 
+  dateOfBirth: {
+    type: Date,
+    required: [true, 'La date de naissance est requise.']
   },
-  class: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Class' 
+  class: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Class',
+    required: false // Peut être non assigné au début
   },
-  // --- LIGNE AJOUTÉE ---
-  // Lien vers le document User qui contient l'email et le mot de passe
-  userAccount: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true,
-    unique: true // Chaque profil étudiant ne peut être lié qu'à un seul compte
+  // --- LIAISON AVEC LE COMPTE UTILISATEUR ---
+  // Cette ligne est essentielle pour que l'étudiant puisse voir ses notes.
+  userAccount: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    unique: true,
+    sparse: true // Permet d'avoir des profils étudiants sans compte au début
   },
-}, { timestamps: true });
+}, {
+  timestamps: true // Ajoute les champs createdAt et updatedAt
+});
 
-const Student = mongoose.model('Student', studentSchema);
-module.exports = Student;
+module.exports = mongoose.model('Student', studentSchema);

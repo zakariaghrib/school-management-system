@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Container, Typography, Box, Paper, Grid } from '@mui/material';
+// Combiner les imports de Material UI
+import { Container, Typography, Box, Paper, Grid } from '@mui/material'; 
 
 // Style pour les cartes de navigation
 const cardStyle = {
@@ -32,12 +33,12 @@ const DashboardPage = () => {
         Tableau de Bord
       </Typography>
       <Typography>
-        Bienvenue ! Votre rôle est : <strong>{user.role}</strong>.
+        Bienvenue, {user.name} ! Votre rôle est : <strong>{user.role}</strong>.
       </Typography>
       <hr style={{ margin: '20px 0' }}/>
       
       <Grid container spacing={3}>
-        {/* Cartes pour Admins et Enseignants */}
+        {/* Cartes pour Admin et Enseignant */}
         {(user.role === 'admin' || user.role === 'teacher') && (
           <>
             <Grid item xs={12} sm={6} md={4}>
@@ -55,34 +56,34 @@ const DashboardPage = () => {
           </>
         )}
 
-        {/* Cartes pour Admins seulement */}
+        {/* Cartes pour Admin seulement */}
         {user.role === 'admin' && (
           <>
             <Grid item xs={12} sm={6} md={4}>
               <Paper component={Link} to="/students" sx={cardStyle} elevation={3}>
                 <Typography variant="h6">Gestion des Étudiants</Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>Voir et gérer les listes d'étudiants.</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Gérer les profils étudiants.</Typography>
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <Paper component={Link} to="/teachers" sx={cardStyle} elevation={3}>
                 <Typography variant="h6">Gestion des Enseignants</Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>Ajouter et gérer les enseignants.</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Gérer les profils enseignants.</Typography>
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <Paper component={Link} to="/classes" sx={cardStyle} elevation={3}>
                 <Typography variant="h6">Gestion des Classes</Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>Organiser les classes et les effectifs.</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Organiser les classes.</Typography>
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <Paper component={Link} to="/subjects" sx={cardStyle} elevation={3}>
                 <Typography variant="h6">Gestion des Matières</Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>Ajouter et supprimer des matières.</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>Gérer les matières de l'école.</Typography>
               </Paper>
             </Grid>
-            {/* --- NOUVELLE CARTE AJOUTÉE ICI --- */}
+            {/* CARTE AJOUTÉE/RÉTABLIE : Gestion des Utilisateurs */}
             <Grid item xs={12} sm={6} md={4}>
               <Paper component={Link} to="/users" sx={cardStyle} elevation={3}>
                 <Typography variant="h6">Gestion des Utilisateurs</Typography>
@@ -91,10 +92,19 @@ const DashboardPage = () => {
             </Grid>
           </>
         )}
+
+        {/* Carte pour Étudiant seulement (de la version 2770df0) */}
+        {user.role === 'student' && (
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper component={Link} to="/my-results" sx={cardStyle} elevation={3}>
+              <Typography variant="h6">Mes Résultats</Typography>
+              <Typography variant="body2" sx={{ mt: 1 }}>Consulter mon bulletin de notes.</Typography>
+            </Paper>
+          </Grid>
+        )}
       </Grid>
     </Container>
   );
 };
 
 export default DashboardPage;
-

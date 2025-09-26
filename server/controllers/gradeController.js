@@ -1,5 +1,6 @@
 const Grade = require('../models/Grade.js');
 const Class = require('../models/Class.js');
+const Student = require('../models/Student.js');
 const Subject = require('../models/Subject.js');
 
 // Ajouter une nouvelle note
@@ -23,15 +24,10 @@ const getGradesForClass = async (req, res) => {
       return res.status(404).json({ msg: 'Classe non trouvée' });
     }
     const studentIds = targetClass.students;
-
-    // --- CORRECTION ICI ---
-    // On ajoute .populate() pour récupérer les détails de l'étudiant et de la matière
     const grades = await Grade.find({ student: { $in: studentIds } })
-      .populate('student', 'firstName lastName') // Récupère le prénom et le nom de l'étudiant
-      .populate('subject', 'name')             // Récupère le nom de la matière
+      .populate('student', 'firstName lastName')
+      .populate('subject', 'name')
       .sort({ createdAt: -1 });
-    // --------------------
-      
     res.json(grades);
   } catch (error) {
     res.status(500).json({ msg: 'Erreur du serveur' });
@@ -76,16 +72,13 @@ const getDetailedClassResults = async (req, res) => {
     const { classId } = req.params;
     const targetClass = await Class.findById(classId).populate('students', 'firstName lastName');
     if (!targetClass) return res.status(404).json({ msg: 'Classe non trouvée' });
-
     const allSubjects = await Subject.find({});
     const studentIds = targetClass.students.map(s => s._id);
-
     const results = await Grade.aggregate([
       { $match: { student: { $in: studentIds } } },
       { $group: { _id: { student: '$student', subject: '$subject' }, averageSubjectGrade: { $avg: '$grade' } } },
       { $group: { _id: '$_id.student', gradesBySubject: { $push: { subjectId: '$_id.subject', average: '$averageSubjectGrade' } }, overallAverage: { $avg: '$averageSubjectGrade' } } }
     ]);
-
     const detailedResults = targetClass.students.map(student => {
       const studentResult = results.find(r => r._id.equals(student._id));
       return {
@@ -95,22 +88,54 @@ const getDetailedClassResults = async (req, res) => {
         overallAverage: studentResult ? studentResult.overallAverage : 0
       };
     });
-
-    res.json({
-      className: targetClass.name,
-      allSubjects: allSubjects,
-      results: detailedResults
-    });
+    res.json({ className: targetClass.name, allSubjects: allSubjects, results: detailedResults });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ msg: 'Erreur du serveur' });
   }
 };
 
+// Obtenir les résultats de l'étudiant connecté
+const getMyResults = async (req, res) => {
+  try {
+    const studentProfile = await Student.findOne({ userAccount: req.user.id }).populate('class');
+    if (!studentProfile) {
+      return res.status(404).json({ msg: 'Profil étudiant non trouvé pour ce compte.' });
+    }
+    const grades = await Grade.find({ student: studentProfile._id }).populate('subject');
+    let totalPoints = 0;
+    const gradesBySubject = {};
+    grades.forEach(g => {
+      if (!g.subject) return;
+      const subjectId = g.subject._id.toString();
+      if (!gradesBySubject[subjectId]) {
+        gradesBySubject[subjectId] = { subjectName: g.subject.name, total: 0, count: 0 };
+      }
+      gradesBySubject[subjectId].total += g.grade;
+      gradesBySubject[subjectId].count++;
+    });
+    const finalGrades = Object.values(gradesBySubject).map(sub => {
+      const average = sub.total / sub.count;
+      totalPoints += average;
+      return { subjectName: sub.subjectName, average: average };
+    });
+    const overallAverage = finalGrades.length > 0 ? totalPoints / finalGrades.length : 0;
+    res.json({
+      studentName: `${studentProfile.firstName} ${studentProfile.lastName}`,
+      className: studentProfile.class ? studentProfile.class.name : 'Non assigné',
+      gradesBySubject: finalGrades,
+      overallAverage,
+    });
+  } catch (error) {
+    res.status(500).json({ msg: 'Erreur du serveur' });
+  }
+};
+
+// LA CORRECTION EST ICI : Toutes les fonctions doivent être listées pour être exportées
 module.exports = {
   addGrade,
   getGradesForClass,
   updateGrade,
   deleteGrade,
   getDetailedClassResults,
+  getMyResults,
 };

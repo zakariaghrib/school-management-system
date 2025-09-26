@@ -8,14 +8,11 @@ const {
   deleteTeacher,
   getMyClasses,
 } = require('../controllers/teacherController.js');
-
 const { protect } = require('../middlewares/authMiddleware.js');
 const { authorize } = require('../middlewares/authorizationMiddleware.js');
 
-// Route spéciale pour un enseignant connecté
 router.get('/my-classes', protect, authorize('teacher'), getMyClasses);
 
-// Routes CRUD pour les admins
 router.route('/')
   .get(protect, authorize('admin'), getAllTeachers)
   .post(protect, authorize('admin'), createTeacher);
