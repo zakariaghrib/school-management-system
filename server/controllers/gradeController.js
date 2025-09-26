@@ -23,10 +23,15 @@ const getGradesForClass = async (req, res) => {
       return res.status(404).json({ msg: 'Classe non trouvée' });
     }
     const studentIds = targetClass.students;
+
+    // --- CORRECTION ICI ---
+    // On ajoute .populate() pour récupérer les détails de l'étudiant et de la matière
     const grades = await Grade.find({ student: { $in: studentIds } })
-      .populate('student', 'firstName lastName')
-      .populate('subject', 'name')
+      .populate('student', 'firstName lastName') // Récupère le prénom et le nom de l'étudiant
+      .populate('subject', 'name')             // Récupère le nom de la matière
       .sort({ createdAt: -1 });
+    // --------------------
+      
     res.json(grades);
   } catch (error) {
     res.status(500).json({ msg: 'Erreur du serveur' });
