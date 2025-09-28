@@ -9,28 +9,27 @@ import {
   TableCell, TableContainer, TableHead, TableRow, CircularProgress,
   Button, TextField, Alert
 } from '@mui/material';
+import { FaClipboardList } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const ClassGradesPage = () => {
   const { classId } = useParams();
-  const { token, user } = useContext(AuthContext); // **1. Récupérer le token et l'utilisateur**
+  const { token, user } = useContext(AuthContext);
 
   const [students, setStudents] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [grades, setGrades] = useState({});
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  // Transformer les notes existantes en un format facile à utiliser: { studentId: { subjectId: { gradeId, gradeValue } } }
   const mapExistingGrades = (existingGradesData) => {
     const mappedGrades = {};
     existingGradesData.forEach(grade => {
       const studentId = grade.student._id;
       const subjectId = grade.subject._id;
-      if (!mappedGrades[studentId]) {
-        mappedGrades[studentId] = {};
-      }
-      // On ne garde que la première note trouvée pour un couple étudiant/matière pour simplifier l'affichage
+      if (!mappedGrades[studentId]) mappedGrades[studentId] = {};
       if (!mappedGrades[studentId][subjectId]) {
         mappedGrades[studentId][subjectId] = { gradeId: grade._id, gradeValue: grade.grade };
       }
@@ -39,7 +38,6 @@ const ClassGradesPage = () => {
   };
 
   useEffect(() => {
-    // **2. Vérifier que le token existe avant de faire les appels**
     if (token) {
       setLoading(true);
       setError('');
@@ -52,33 +50,27 @@ const ClassGradesPage = () => {
         setSubjects(subjectsRes.data);
         setGrades(mapExistingGrades(gradesRes.data));
       }).catch(err => {
-        console.error("Erreur de chargement des données:", err);
-        setError("Erreur de chargement des données. L'authentification a peut-être échoué.");
-      }).finally(() => {
-        setLoading(false);
-      });
+        setError("Erreur de chargement des données.");
+      }).finally(() => setLoading(false));
     }
-  }, [classId, token]); // **3. Ajouter token aux dépendances**
+  }, [classId, token]);
 
   const handleGradeChange = (studentId, subjectId, value) => {
     const gradeValue = value === '' ? null : parseInt(value, 10);
-    // Permettre la suppression et limiter les notes entre 0 et 20
     if (gradeValue === null || (gradeValue >= 0 && gradeValue <= 20)) {
       setGrades(prev => ({
         ...prev,
         [studentId]: {
           ...prev[studentId],
-          [subjectId]: {
-            ...prev[studentId]?.[subjectId], // Garder gradeId s'il existe
-            gradeValue: gradeValue,
-          }
+          [subjectId]: { ...prev[studentId]?.[subjectId], gradeValue: gradeValue },
         }
       }));
     }
   };
 
   const handleSaveGrades = async () => {
-    setMessage('Sauvegarde en cours...');
+    setSaving(true);
+    setMessage('');
     setError('');
     const promises = [];
 
@@ -86,18 +78,10 @@ const ClassGradesPage = () => {
       for (const subjectId of Object.keys(grades[studentId])) {
         const gradeInfo = grades[studentId][subjectId];
         if (gradeInfo.gradeValue !== null) {
-          const gradeData = {
-            student: studentId,
-            subject: subjectId,
-            grade: gradeInfo.gradeValue,
-            examType: 'Contrôle 1', // À dynamiser si besoin
-            teacher: user.id, // Assurez-vous que votre token contient l'ID de l'utilisateur
-          };
+          const gradeData = { student: studentId, subject: subjectId, grade: gradeInfo.gradeValue, examType: 'Contrôle', teacher: user.id };
           if (gradeInfo.gradeId) {
-            // Mettre à jour la note existante
             promises.push(gradeService.updateGrade(gradeInfo.gradeId, { grade: gradeInfo.gradeValue }, token));
           } else {
-            // Créer une nouvelle note
             promises.push(gradeService.addGrade(gradeData, token));
           }
         }
@@ -109,58 +93,86 @@ const ClassGradesPage = () => {
       setMessage('Notes sauvegardées avec succès !');
     } catch (err) {
       setError('Une erreur est survenue lors de la sauvegarde.');
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-  }
-
   return (
-    <Container maxWidth={false}>
-      <Typography variant="h4" sx={{ my: 4 }}>Saisie des Notes</Typography>
-      {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <TableContainer component={Paper}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', minWidth: 170 }}>Étudiant</TableCell>
-              {subjects.map(subject => (
-                <TableCell key={subject._id} align="center" sx={{ fontWeight: 'bold', minWidth: 120 }}>
-                  {subject.name}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {students.map(student => (
-              <TableRow key={student._id} hover>
-                <TableCell component="th" scope="row">
-                  {student.firstName} {student.lastName}
-                </TableCell>
-                {subjects.map(subject => (
-                  <TableCell key={subject._id} align="center">
-                    <TextField
-                      type="number"
-                      size="small"
-                      inputProps={{ min: 0, max: 20, style: { textAlign: 'center' } }}
-                      value={grades[student._id]?.[subject._id]?.gradeValue ?? ''}
-                      onChange={(e) => handleGradeChange(student._id, subject._id, e.target.value)}
-                      sx={{ width: '80px' }}
-                    />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button variant="contained" color="primary" onClick={handleSaveGrades}>
-          Sauvegarder les Notes
-        </Button>
+    <Container maxWidth={false} sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+        <FaClipboardList className="text-4xl text-gray-600 mr-3" />
+        <Box>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+            Saisie des Notes
+          </Typography>
+          <Typography color="text.secondary">
+            Modifiez les notes des étudiants pour la classe sélectionnée.
+          </Typography>
+        </Box>
       </Box>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
+      
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
+      ) : (
+        <Paper sx={{ borderRadius: 4, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+          <TableContainer>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold', minWidth: 170, bgcolor: 'grey.100' }}>Étudiant</TableCell>
+                  {subjects.map(subject => (
+                    <TableCell key={subject._id} align="center" sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: 'grey.100' }}>
+                      {subject.name}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {students.map((student, index) => (
+                  <motion.tr
+                    key={student._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    style={{ display: 'table-row' }}
+                  >
+                    <TableCell component="th" scope="row">{student.firstName} {student.lastName}</TableCell>
+                    {subjects.map(subject => (
+                      <TableCell key={subject._id} align="center">
+                        <TextField
+                          type="number"
+                          size="small"
+                          inputProps={{ min: 0, max: 20, style: { textAlign: 'center' } }}
+                          value={grades[student._id]?.[subject._id]?.gradeValue ?? ''}
+                          onChange={(e) => handleGradeChange(student._id, subject._id, e.target.value)}
+                          sx={{ width: '80px' }}
+                        />
+                      </TableCell>
+                    ))}
+                  </motion.tr>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
+      
+      {!loading && (
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSaveGrades}
+            disabled={saving}
+          >
+            {saving ? <CircularProgress size={24} color="inherit" /> : 'Sauvegarder les Notes'}
+          </Button>
+        </Box>
+      )}
     </Container>
   );
 };
